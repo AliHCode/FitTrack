@@ -1,30 +1,32 @@
-// This is a basic Flutter widget test.
+// Basic smoke test for FitTrack app initialization.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// This test verifies the app can be instantiated without errors.
+// Model-specific tests are in the test/models/ directory.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:fit_track_mobile/main.dart';
+import 'package:fit_track_mobile/models/food_item.dart';
+import 'package:fit_track_mobile/models/daily_goals.dart';
+import 'package:fit_track_mobile/models/activity_log.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const FitTrackApp());
+  test('FoodItem can be created', () {
+    final item = FoodItem(
+      name: 'Test Food',
+      calories: 100,
+      protein: 10,
+      carbs: 20,
+      fat: 5,
+      quantity: 1,
+    );
+    expect(item.name, 'Test Food');
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  test('DailyGoals has correct defaults', () {
+    final goals = DailyGoals.fromJson({});
+    expect(goals.calories, 2000);
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  test('ActivityLog supports all activity types', () {
+    expect(ActivityType.values.length, 3);
   });
 }

@@ -1,58 +1,197 @@
-# FitTrack Mobile App
+<p align="center">
+  <img src="assets/images/app_icon.png" alt="FitTrack Logo" width="120" />
+</p>
 
-A comprehensive fitness tracking application built with Flutter and Supabase.
+<h1 align="center">FitTrack</h1>
+<p align="center">
+  <strong>Your intelligent fitness & nutrition companion — track meals, log workouts, and crush your health goals.</strong>
+</p>
 
-## Project Overview
+<p align="center">
+  <img src="https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white" alt="Flutter" />
+  <img src="https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white" alt="Dart" />
+  <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Health_Connect-Integrated-4285F4?logo=google-fit&logoColor=white" alt="Health Connect" />
+  <img src="https://img.shields.io/github/license/Ali55366/FitTrack" alt="License" />
+  <img src="https://github.com/Ali55366/FitTrack/actions/workflows/flutter-ci.yml/badge.svg" alt="CI" />
+</p>
 
-FitTrack helps users track their daily nutrition, exercise, and health goals.
-**Key Features:**
-- **User Authentication:** Sign up, Login, Forgot Password (via Supabase Auth).
-- **Profile Management:** Set fitness details (height, weight, age) and upload a profile picture.
-- **Calorie & Macro Tracking:** Log meals using the USDA food database.
-- **Activity Logging:** Track exercises and calories burned.
-- **Dashboard:** Visual summary of daily progress.
-- **Settings:** Manage account preferences and send feedback.
+---
 
-## Prerequisites
+## 🧩 The Problem
 
-To run this project, you need:
-1.  **Flutter SDK** (Channel stable, recommended version 3.x).
-2.  **Dart SDK** (included with Flutter).
-3.  **Android Studio** or **VS Code** with Flutter extensions.
-4.  **Internet Connection** (Required for Supabase backend and food search API).
+Most fitness apps are either too complex (overloaded with features nobody uses) or too simple (just a step counter). People who want to **track what they eat alongside what they burn** — without paying a subscription — are left with few good options.
 
-## Installation & Setup
+**FitTrack** solves this by combining **meal logging** (powered by the USDA nutrition database), **exercise tracking**, and **automatic calorie detection** via Android Health Connect — all in one clean, free app.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    cd FitTrack
-    ```
+---
 
-2.  **Install Dependencies:**
-    ```bash
-    flutter pub get
-    ```
+## 📸 Screenshots
 
-3.  **Run the App:**
-    Connect an Android/iOS device or start an emulator, then run:
-    ```bash
-    flutter run
-    ```
-    *Note: The app is configured with Supabase credentials out-of-the-box, so it should connect to the live backend immediately.*
+<!-- 
+TO ADD SCREENSHOTS:
+1. Take screenshots of your app on a real device or emulator
+2. Save them to the screenshots/ folder (create it if needed)
+3. Replace the placeholder lines below with:
+   <img src="screenshots/login.png" width="200" />
+   <img src="screenshots/dashboard.png" width="200" />
+   etc.
+-->
 
-## Database Setup (Optional)
+> **Coming soon** — Screenshots will be added after final UI polish.
 
-The project connects to a hosted Supabase instance by default. If you wish to set up your own backend:
+---
 
-1.  Create a new project on [Supabase.com](https://supabase.com).
-2.  Run the contents of `schema.sql` (found in the root directory) in your Supabase **SQL Editor**.
-3.  Update `lib/services/api_service.dart` with your new `projectId` and `publicAnonKey` (found in API Settings).
+## 🛠️ Tech Stack
 
-## Project Structure
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | Flutter 3.x (Dart) | Cross-platform mobile UI |
+| **State Management** | Provider | Reactive state with `ChangeNotifier` |
+| **Backend** | Supabase | Auth, PostgreSQL DB, Storage |
+| **Nutrition API** | USDA FoodData Central | Accurate calorie & macro data |
+| **Health Integration** | Android Health Connect | Auto step & calorie tracking |
+| **Auth** | Supabase Auth + Google Sign-In | Email/password & OAuth |
 
-- `lib/pages/`: Application screens (Login, Home, Profile, Food Log, etc.).
-- `lib/services/`: API handling for Supabase and USDA food search.
-- `lib/models/`: Data models (FoodItem, UserProfile, etc.).
-- `lib/providers/`: State management (AppState).
-- `schema.sql`: Database creation script.
+---
+
+## ✨ Features
+
+| Feature | Description |
+| :--- | :--- |
+| 🔐 **Authentication** | Email/password signup & login, Google Sign-In, password reset via deep link |
+| 📊 **Calorie Dashboard** | Real-time calorie ring showing daily intake vs. goal |
+| 🍽️ **Meal Logging** | Search the USDA database, log to Breakfast / Lunch / Dinner |
+| 🏃 **Activity Tracking** | Manual exercise logging (Walking, Running, Cycling) |
+| ❤️ **Health Connect** | Automatic step count & active calorie burn from Android sensors |
+| 👤 **Profile** | BMI calculator, avatar upload, personal details |
+| 🎯 **Goal Setting** | Custom daily targets for calories, protein, carbs, fat |
+| 💬 **Feedback** | In-app help & support with direct feedback submission |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (stable 3.x)
+- Android Studio or VS Code with Flutter extension
+- An Android device or emulator (API 26+)
+
+### Installation
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/Ali55366/FitTrack.git
+cd FitTrack
+
+# 2. Install dependencies
+flutter pub get
+
+# 3. Run the app
+flutter run
+```
+
+> The app connects to a hosted Supabase backend out-of-the-box — no extra setup needed.
+
+### Environment Configuration (Optional)
+
+If you want to use your **own** Supabase project:
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run `schema.sql` in the Supabase SQL Editor
+3. Update these values in `lib/services/api_service.dart`:
+   ```dart
+   static const String projectId = 'YOUR_PROJECT_ID';
+   static const String publicAnonKey = 'YOUR_ANON_KEY';
+   ```
+4. Configure Google OAuth in Supabase Dashboard → Auth → Providers
+
+---
+
+## 📖 How to Use
+
+1. **Sign Up** → Create an account with email or Google
+2. **Set Goals** → Go to Profile → set your daily calorie & macro targets
+3. **Log Meals** → Tap the search bar on the dashboard → search any food → add to a meal
+4. **Log Exercise** → Go to Activity tab → tap the **+** button → choose activity type
+5. **Track Progress** → Watch your calorie ring fill up throughout the day
+6. **Sync Health Data** → Activity tab → "Auto Data" tab shows steps & burned calories from Health Connect
+
+---
+
+## 📁 Project Structure
+
+```
+lib/
+├── main.dart                  # App entry point & routing
+├── models/
+│   ├── food_item.dart         # FoodItem & MealsData models
+│   ├── daily_goals.dart       # DailyGoals model
+│   └── activity_log.dart      # ActivityLog model & enum
+├── pages/
+│   ├── login_page.dart        # Login screen
+│   ├── signup_page.dart       # Registration screen
+│   ├── home_page.dart         # Main container with nav
+│   ├── food_log_main_page.dart# Dashboard with calorie ring
+│   ├── add_food_page.dart     # USDA food search
+│   ├── activity_page.dart     # Manual + Auto activity tabs
+│   ├── add_activity_page.dart # Exercise input form
+│   ├── profile_page.dart      # User profile & BMI
+│   ├── goals_page.dart        # Daily goal settings
+│   ├── settings_page.dart     # App settings
+│   └── ...
+├── providers/
+│   └── app_state.dart         # Central state management
+├── services/
+│   ├── api_service.dart       # Supabase & USDA API calls
+│   └── health_service.dart    # Health Connect integration
+└── widgets/
+    └── bottom_nav.dart        # Custom bottom navigation bar
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Run all unit tests
+flutter test
+
+# Run static analysis
+flutter analyze
+```
+
+Tests cover data model serialization (`FoodItem`, `DailyGoals`, `ActivityLog`), default value handling, and round-trip JSON encoding.
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Core meal & activity logging
+- [x] Health Connect auto-tracking
+- [x] Google Sign-In
+- [x] Profile photo upload
+- [ ] 📊 Weight trend charts & weekly reports
+- [ ] 📷 AI-powered food scanning (camera → nutrition)
+- [ ] 📴 Offline mode with local caching
+- [ ] 🏆 Social challenges & friend leaderboards
+- [ ] 🔄 Barcode scanner for packaged foods
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">
+  Built with ❤️ using Flutter & Supabase
+</p>

@@ -12,8 +12,8 @@
   <img src="https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white" alt="Dart" />
   <img src="https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" />
   <img src="https://img.shields.io/badge/Health_Connect-Integrated-4285F4?logo=google-fit&logoColor=white" alt="Health Connect" />
-  <img src="https://img.shields.io/github/license/Ali55366/FitTrack" alt="License" />
-  <img src="https://github.com/Ali55366/FitTrack/actions/workflows/flutter-ci.yml/badge.svg" alt="CI" />
+  <img src="https://img.shields.io/github/license/AliHCode/FitTrack" alt="License" />
+  <img src="https://github.com/AliHCode/FitTrack/actions/workflows/flutter-ci.yml/badge.svg" alt="CI" />
 </p>
 
 ---
@@ -82,7 +82,7 @@ TO ADD SCREENSHOTS:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/Ali55366/FitTrack.git
+git clone https://github.com/AliHCode/FitTrack.git
 cd FitTrack
 
 # 2. Install dependencies

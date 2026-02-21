@@ -4,7 +4,7 @@ Thanks for your interest in contributing! Here's how you can help.
 
 ## 🐛 Reporting Bugs
 
-1. Check [existing issues](https://github.com/Ali55366/FitTrack/issues) first
+1. Check [existing issues](https://github.com/AliHCode/FitTrack/issues) first
 2. Open a new issue with:
    - **Device / OS version**
    - **Steps to reproduce**

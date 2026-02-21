@@ -7,6 +7,7 @@ import 'pages/login_page.dart';
 import 'pages/signup_page.dart';
 import 'pages/forgot_password_page.dart';
 import 'pages/home_page.dart';
+import 'pages/reset_password_page.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -26,8 +27,30 @@ void main() async {
   runApp(const FitTrackApp());
 }
 
-class FitTrackApp extends StatelessWidget {
+class FitTrackApp extends StatefulWidget {
   const FitTrackApp({super.key});
+
+  @override
+  State<FitTrackApp> createState() => _FitTrackAppState();
+}
+
+class _FitTrackAppState extends State<FitTrackApp> {
+  @override
+  void initState() {
+    super.initState();
+    _setupAuthListener();
+  }
+
+  void _setupAuthListener() {
+    Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final event = data.event;
+      if (event == AuthChangeEvent.passwordRecovery) {
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (context) => const ResetPasswordPage()),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +58,7 @@ class FitTrackApp extends StatelessWidget {
       create: (_) => AppState()..initialize(),
       child: MaterialApp(
         title: 'FitTrack',
+        navigatorKey: navigatorKey, // Use global navigator key
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.teal,
@@ -49,6 +73,9 @@ class FitTrackApp extends StatelessWidget {
     );
   }
 }
+
+// Global Navigator Key
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class AppNavigator extends StatelessWidget {
   const AppNavigator({super.key});

@@ -1,463 +1,430 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_state.dart';
 import '../models/activity_log.dart';
-import '../models/daily_goals.dart';
-import '../widgets/bottom_nav.dart';
 import 'add_activity_page.dart';
+import '../widgets/bottom_nav.dart';
 
-class ActivityPage extends StatelessWidget {
-  final Function(String, {String? activity}) navigateTo;
-  final List<ActivityLog> activities;
-  final DailyGoals dailyGoals;
+class ActivityPage extends StatefulWidget {
+  final Function(String, {String? meal, String? activity}) navigateTo;
 
-  const ActivityPage({
-    super.key,
-    required this.navigateTo,
-    required this.activities,
-    required this.dailyGoals,
-  });
+  const ActivityPage({super.key, required this.navigateTo});
 
-  int _getTotalCaloriesBurned() {
-    return activities.fold(0, (sum, a) => sum + a.caloriesBurned);
+  @override
+  State<ActivityPage> createState() => _ActivityPageState();
+}
+
+class _ActivityPageState extends State<ActivityPage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    // Request permissions on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AppState>(context, listen: false).requestHealthPermissions();
+    });
   }
 
-  Map<String, dynamic> _getActivityStats(ActivityType type) {
-    final filtered = activities.where((a) => a.type == type).toList();
-    final totalDuration = filtered.fold(0, (sum, a) => sum + a.duration);
-    final totalCalories = filtered.fold(0, (sum, a) => sum + a.caloriesBurned);
-    return {
-      'count': filtered.length,
-      'duration': totalDuration,
-      'calories': totalCalories,
-    };
-  }
-
-  String _formatTime(DateTime date) {
-    final now = DateTime.now();
-    if (date.year == now.year && date.month == now.month && date.day == now.day) {
-      return '${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-    }
-    return '${date.month}/${date.day}';
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final totalCaloriesBurned = _getTotalCaloriesBurned();
-    final dailyBurnGoal = dailyGoals.caloriesToBurn;
-    final remainingCalories = (dailyBurnGoal - totalCaloriesBurned).clamp(0, double.infinity).toInt();
-    final progressPercentage = (totalCaloriesBurned / dailyBurnGoal * 100).clamp(0.0, 100.0);
-
-    final walkingStats = _getActivityStats(ActivityType.walking);
-    final runningStats = _getActivityStats(ActivityType.running);
-    final cyclingStats = _getActivityStats(ActivityType.cycling);
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.8),
-                border: Border(
-                  bottom: BorderSide(
-                    color: Colors.white.withOpacity(0.4),
-                    width: 1,
-                  ),
-                ),
-              ),
-              child: const Center(
-                child: Text(
-                  'Activity',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-              ),
-            ),
+        child: Consumer<AppState>(
+          builder: (context, appState, _) {
+            final caloriesBurnedGoal = appState.dailyGoals.caloriesToBurn;
+            
+            // Calculate total manual calories
+            final manualCalories = appState.activities.fold(0.0, (sum, item) => sum + item.caloriesBurned);
+            
+            // Auto calories from Health Connect
+            final autoCalories = appState.autoBurnedCalories;
+            final steps = appState.steps;
 
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Activity Goal Card
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
-                          width: 1,
-                        ),
+            final totalBurned = manualCalories + autoCalories;
+            final progress = (totalBurned / caloriesBurnedGoal).clamp(0.0, 1.0);
+
+            return Column(
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
-                      child: Column(
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.local_fire_department, color: Color(0xFFEA580C), size: 20),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Daily Burn Goal',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          ShaderMask(
-                            shaderCallback: (bounds) => const LinearGradient(
-                              colors: [Color(0xFFEA580C), Color(0xFFDC2626)],
-                            ).createShader(bounds),
-                            child: Text(
-                              '$totalCaloriesBurned',
-                              style: const TextStyle(
-                                fontSize: 48,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                          const Text(
+                            'Activity Tracking',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
                             ),
                           ),
-                          Text(
-                            'of $dailyBurnGoal calories burned',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                          ),
-                          const SizedBox(height: 16),
-                          LinearProgressIndicator(
-                            value: progressPercentage / 100,
-                            backgroundColor: Colors.grey[200],
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFEA580C)),
-                            minHeight: 8,
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Progress: ${progressPercentage.round()}%',
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                              ),
-                              Text(
-                                remainingCalories > 0
-                                    ? '$remainingCalories cal remaining'
-                                    : 'Goal achieved! 🎉',
-                                style: TextStyle(
-                                  color: remainingCalories > 0
-                                      ? const Color(0xFFEA580C)
-                                      : const Color(0xFF14B8A6),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                          IconButton(
+                            icon: const Icon(Icons.sync, color: Color(0xFF14B8A6)),
+                            onPressed: () {
+                              appState.fetchHealthData();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Syncing health data...')),
+                              );
+                            },
                           ),
                         ],
                       ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Quick Actions
-                    const Text(
-                      'Log Activity',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildActivityButton(
-                            context,
-                            'walking',
-                            Icons.directions_walk,
-                            'Walk',
-                            walkingStats['calories'] as int,
-                            () => navigateTo('addactivity', activity: 'walking'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildActivityButton(
-                            context,
-                            'running',
-                            Icons.directions_run,
-                            'Running',
-                            runningStats['calories'] as int,
-                            () => navigateTo('addactivity', activity: 'running'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildActivityButton(
-                            context,
-                            'cycling',
-                            Icons.directions_bike,
-                            'Cycling',
-                            cyclingStats['calories'] as int,
-                            () => navigateTo('addactivity', activity: 'cycling'),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    if (totalCaloriesBurned > 0) ...[
                       const SizedBox(height: 24),
-                      Row(
+                      // Progress Ring
+                       Stack(
+                        alignment: Alignment.center,
                         children: [
-                          Expanded(
-                            child: _buildStatCard('Activities', activities.length.toString()),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Minutes',
-                              activities.fold(0, (sum, a) => sum + a.duration).toString(),
+                          SizedBox(
+                            width: 160,
+                            height: 160,
+                            child: CircularProgressIndicator(
+                              value: progress,
+                              strokeWidth: 12,
+                              backgroundColor: Colors.grey[100],
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF14B8A6)), // Teal for activity
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildStatCard(
-                              'Avg Cal/Min',
-                              activities.isNotEmpty
-                                  ? (totalCaloriesBurned /
-                                          activities.fold(0, (sum, a) => sum + a.duration))
-                                      .round()
-                                      .toString()
-                                  : '0',
-                            ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${totalBurned.round()}',
+                                style: const TextStyle(
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
+                              Text(
+                                '/ $caloriesBurnedGoal kcal',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[500],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
-
-                    const SizedBox(height: 24),
-
-                    // Recent Activities
-                    const Text(
-                      'Recent Activities',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    if (activities.isEmpty)
-                      Container(
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF14B8A6), Color(0xFF06B6D4)],
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.trending_up, color: Colors.white, size: 32),
-                            ),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'No activities logged yet',
-                              style: TextStyle(
-                                color: Color(0xFF64748B),
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Start logging your workouts to track calories burned!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xFF94A3B8),
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      ...activities.reversed.take(5).map((activity) {
-                        return _buildActivityCard(activity);
-                      }).toList(),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
+                
+                // Tabs
+                Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    labelColor: const Color(0xFF14B8A6),
+                    unselectedLabelColor: Colors.grey[500],
+                    indicatorColor: const Color(0xFF14B8A6),
+                    tabs: const [
+                      Tab(text: 'Manual Log'),
+                      Tab(text: 'Auto Data'),
+                    ],
+                  ),
+                ),
+
+                // Tab View
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      // Manual Tab
+                      _buildManualList(context, appState),
+                      
+                      // Auto Tab
+                      _buildAutoStats(context, steps, autoCalories),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: BottomNav(
         currentPage: 'activity',
-        onNavigate: (page) => navigateTo(page),
+        onNavigate: (page) => widget.navigateTo(page),
+      ),
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20.0),
+        child: FloatingActionButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: Colors.transparent,
+            builder: (context) => Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Select Activity',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _buildActivityOption(
+                    context,
+                    icon: Icons.directions_walk,
+                    label: 'Walking',
+                    color: const Color(0xFF14B8A6),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateToAddActivity(context, 'walking');
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildActivityOption(
+                    context,
+                    icon: Icons.directions_run,
+                    label: 'Running',
+                    color: const Color(0xFF06B6D4),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateToAddActivity(context, 'running');
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  _buildActivityOption(
+                    context,
+                    icon: Icons.directions_bike,
+                    label: 'Cycling',
+                    color: const Color(0xFF3B82F6),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _navigateToAddActivity(context, 'cycling');
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF14B8A6),
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
       ),
     );
   }
 
-  Widget _buildActivityButton(
-    BuildContext context,
-    String type,
-    IconData icon,
-    String label,
-    int calories,
-    VoidCallback onTap,
-  ) {
+  Widget _buildActivityOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.8),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.4),
-            width: 1,
-          ),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
-        child: Column(
+        child: Row(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDFA),
+                color: color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFF14B8A6), size: 24),
+              child: Icon(icon, color: color, size: 24),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(width: 16),
             Text(
               label,
               style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
                 color: Color(0xFF1E293B),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
               ),
             ),
-            if (calories > 0) ...[
-              const SizedBox(height: 4),
-              Text(
-                '$calories cal',
-                style: const TextStyle(
-                  color: Color(0xFF14B8A6),
-                  fontSize: 12,
-                ),
-              ),
-            ],
+            const Spacer(),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(String label, String value) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.4),
-          width: 1,
+  void _navigateToAddActivity(BuildContext context, String activityType) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddActivityPage(
+          onBack: () => Navigator.pop(context),
+          selectedActivity: activityType,
+          onAddActivity: (activity) {
+            Provider.of<AppState>(context, listen: false).addActivity(activity);
+          },
         ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1E293B),
-            ),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildActivityCard(ActivityLog activity) {
-    final emoji = activity.type == ActivityType.walking
-        ? '🚶'
-        : activity.type == ActivityType.running
-            ? '🏃'
-            : '🚴';
-    final name = activity.type == ActivityType.walking
-        ? 'Walking'
-        : activity.type == ActivityType.running
-            ? 'Running'
-            : 'Cycling';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.4),
-          width: 1,
+  Widget _buildManualList(BuildContext context, AppState appState) {
+    if (appState.activities.isEmpty) {
+       return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.directions_run, size: 64, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            Text(
+              'No manual activities logged',
+              style: TextStyle(color: Colors.grey[500]),
+            ),
+          ],
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF14B8A6), Color(0xFF06B6D4)],
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: appState.activities.length,
+      itemBuilder: (context, index) {
+        final activity = appState.activities[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 24)),
-            ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1E293B),
-                  ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDFA), // Teal-50
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(height: 4),
-                Row(
+                child: const Icon(Icons.fitness_center, color: Color(0xFF14B8A6)),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.access_time, size: 14, color: Color(0xFF64748B)),
-                    const SizedBox(width: 4),
                     Text(
-                      '${activity.duration} min • ${_formatTime(activity.timestamp)}',
+                      activity.activityName,
                       style: const TextStyle(
-                        color: Color(0xFF64748B),
-                        fontSize: 12,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                    Text(
+                      '${activity.durationMinutes} minutes',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${activity.caloriesBurned} kcal',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF14B8A6),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAutoStats(BuildContext context, int steps, double calories) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+           Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey[100]!),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecorat
+                  on(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(Icons.directions_walk, size: 32, color: Colors.blue.shade600),
+                ),
+                const SizedBox(width: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Steps count',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '$steps',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
                       ),
                     ),
                   ],
@@ -465,30 +432,50 @@ class ActivityPage extends StatelessWidget {
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Color(0xFF14B8A6), Color(0xFF06B6D4)],
-                ).createShader(bounds),
-                child: Text(
-                  '${activity.caloriesBurned}',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey[100]!),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.teal.shade50,
+                    borderRadius: BorderRadius.circular(16),
                   ),
+                  child: Icon(Icons.local_fire_department_rounded, size: 32, color: Colors.teal.shade600),
                 ),
-              ),
-              const Text(
-                'cal',
-                style: TextStyle(
-                  color: Color(0xFF94A3B8),
-                  fontSize: 12,
+                const SizedBox(width: 20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Automated Burn',
+                      style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${calories.round()} kcal',
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Data synced from Health Connect / Google Fit',
+            style: TextStyle(color: Colors.grey, fontSize: 12),
           ),
         ],
       ),

@@ -57,12 +57,21 @@ class _SignUpPageState extends State<SignUpPage> {
         _passwordController.text,
         _nameController.text.trim(),
       );
+      
+      // If we reach here, signup (and potentially auto-login) succeeded.
+      // If auto-login worked, AppNavigator will switch to HomePage automatically.
+      // If we need to confirm email, we shouldn't be here (auth exception would involve).
+      // However, if we just want to be safe, we can check isLoggedIn.
+      if (!mounted) return;
+      
     } catch (e) {
+      if (!mounted) return;
+      
       setState(() {
         _isLoading = false;
         final message = e.toString().toLowerCase();
         
-        // Handle "Email not confirmed" specifically - this is actually a success case for signup
+        // Handle "Email not confirmed" specifically
         if (message.contains('email not confirmed')) {
           _error = null;
           showDialog(
@@ -77,8 +86,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context); // Close dialog
-                    Navigator.pop(context); // Close dialog
-                    Navigator.pop(context); // Go back to Login Page
+                    Navigator.pop(context); // Go back to Login Page (Only ONE pop needed from SignUpPage)
                   },
                   child: const Text('OK'),
                 ),
@@ -93,7 +101,6 @@ class _SignUpPageState extends State<SignUpPage> {
         } else if (message.contains('password')) {
           _error = 'Password should be at least 6 characters.';
         } else {
-          // Show the actual clean message if possible, or a generic fallback
           _error = e.toString().replaceAll('Exception:', '').trim(); 
         }
       });

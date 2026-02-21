@@ -67,23 +67,10 @@ class FoodLogMainPage extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Image.asset(
-                            'assets/images/logo1.png',
-                            height: 48,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Track your nutrition',
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                      Image.asset(
+                        'assets/images/logo1.png',
+                        height: 48,
+                        fit: BoxFit.contain,
                       ),
                       IconButton(
                         onPressed: () => navigateTo('profile'),
@@ -475,12 +462,26 @@ class FoodLogMainPage extends StatelessWidget {
                             ],
                           ],
                         ),
-                        Text(
-                          '${food.calories.round()} cal',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 14,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              '${food.calories.round()} cal',
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 16, color: Colors.grey),
+                              onPressed: () {
+                                Provider.of<AppState>(context, listen: false)
+                                    .removeFood(food, title.toLowerCase());
+                              },
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
                         ),
                       ],
                     ),

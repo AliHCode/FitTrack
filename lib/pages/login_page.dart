@@ -258,19 +258,49 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Skip Button
-                      TextButton(
-                        onPressed: () {
-                          final appState = Provider.of<AppState>(context, listen: false);
-                          appState.skipLogin();
-                        },
-                        child: const Text(
-                          'Skip',
+                      // Google Sign In Button
+                      OutlinedButton.icon(
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                setState(() {
+                                  _isLoading = true;
+                                  _error = null;
+                                });
+                                try {
+                                  final appState = Provider.of<AppState>(context, listen: false);
+                                  await appState.googleLogin();
+                                  // Nav handled by auth listener/state change
+                                } catch (e) {
+                                  if (!mounted) return;
+                                  setState(() {
+                                    _isLoading = false;
+                                    _error = e.toString().replaceAll('Exception:', '').trim();
+                                  });
+                                }
+                              },
+                        icon: Image.asset(
+                          'assets/images/google_logo.png', // We need to ensure this asset exists or use a generic icon for now
+                          height: 24,
+                          width: 24,
+                          errorBuilder: (context, error, stackTrace) => 
+                              const Icon(Icons.login, color: Color(0xFF14B8A6)),
+                        ),
+                        label: const Text(
+                          'Sign in with Google',
                           style: TextStyle(
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF1E293B),
                             fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                           ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          backgroundColor: Colors.white,
                         ),
                       ),
                     ],

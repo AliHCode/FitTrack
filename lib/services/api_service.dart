@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/food_item.dart';
 import '../models/activity_log.dart';
 import '../models/daily_goals.dart';
@@ -114,6 +115,52 @@ class ApiService {
 
   Future<void> logout() async {
     await Supabase.instance.client.auth.signOut();
+  }
+
+  // Google Sign In
+  Future<Map<String, dynamic>> googleSignIn() async {
+    try {
+      /// Web Client ID that you registered with Google Cloud.
+      const webClientId = '636557276818-sljlvja3s3d8jtfr4ac49tocfm53puc7.apps.googleusercontent.com';
+
+      /// iOS Client ID that you registered with Google Cloud.
+      /// For Android, this can be null.
+      const String? iosClientId = null;
+
+      final GoogleSignIn googleSignIn = GoogleSignIn(
+        clientId: iosClientId,
+        serverClientId: webClientId,
+      );
+      
+      final googleUser = await googleSignIn.signIn();
+      final googleAuth = await googleUser?.authentication;
+      final accessToken = googleAuth?.accessToken;
+      final idToken = googleAuth?.idToken;
+
+      if (accessToken == null) {
+        throw 'No Access Token found.';
+      }
+      if (idToken == null) {
+        throw 'No ID Token found.';
+      }
+
+      final response = await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+
+       if (response.user == null) {
+        throw Exception('Google Sign in failed');
+      }
+
+      return {
+        'success': true,
+        'user': response.user!.toJson(),
+      };
+    } catch (e) {
+      throw Exception('Google Sign in failed: $e');
+    }
   }
 
   // Goals API

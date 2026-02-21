@@ -33,4 +33,17 @@ class ActivityLog {
       'timestamp': timestamp.toIso8601String(),
     };
   }
+  // Helpers
+  String get activityName {
+    switch (type) {
+      case ActivityType.walking:
+        return 'Walking';
+      case ActivityType.running:
+        return 'Running';
+      case ActivityType.cycling:
+        return 'Cycling';
+    }
+  }
+
+  int get durationMinutes => duration;
 }

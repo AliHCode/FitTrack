@@ -56,8 +56,6 @@ class _HomePageState extends State<HomePage> {
       case 'activity':
         currentPageWidget = ActivityPage(
           navigateTo: _navigateTo,
-          activities: appState.activities,
-          dailyGoals: appState.dailyGoals,
         );
         break;
       case 'stopwatch':

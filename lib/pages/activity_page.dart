@@ -403,8 +403,7 @@ class _ActivityPageState extends State<ActivityPage> with SingleTickerProviderSt
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecorat
-                  on(
+                  decoration: BoxDecoration(
                     color: Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(16),
                   ),

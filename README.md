@@ -59,14 +59,14 @@ TO ADD SCREENSHOTS:
 
 | Feature | Description |
 | :--- | :--- |
-| 🔐 **Authentication** | Email/password signup & login, Google Sign-In, password reset via deep link |
-| 📊 **Calorie Dashboard** | Real-time calorie ring showing daily intake vs. goal |
-| 🍽️ **Meal Logging** | Search the USDA database, log to Breakfast / Lunch / Dinner |
-| 🏃 **Activity Tracking** | Manual exercise logging (Walking, Running, Cycling) |
-| ❤️ **Health Connect** | Automatic step count & active calorie burn from Android sensors |
-| 👤 **Profile** | BMI calculator, avatar upload, personal details |
-| 🎯 **Goal Setting** | Custom daily targets for calories, protein, carbs, fat |
-| 💬 **Feedback** | In-app help & support with direct feedback submission |
+| 1. **Authentication** | Email/password signup & login, Google Sign-In, password reset via deep link |
+| 2. **Calorie Dashboard** | Real-time calorie ring showing daily intake vs. goal |
+| 3. **Meal Logging** | Search the USDA database, log to Breakfast / Lunch / Dinner |
+| 4. **Activity Tracking** | Manual exercise logging (Walking, Running, Cycling) |
+| 5. **Health Connect** | Automatic step count & active calorie burn from Android sensors |
+| 6. **Profile** | BMI calculator, avatar upload, personal details |
+| 7. **Goal Setting** | Custom daily targets for calories, protein, carbs, fat |
+| 8. **Feedback** | In-app help & support with direct feedback submission |
 
 ---
 
@@ -172,11 +172,11 @@ Tests cover data model serialization (`FoodItem`, `DailyGoals`, `ActivityLog`), 
 - [x] Health Connect auto-tracking
 - [x] Google Sign-In
 - [x] Profile photo upload
-- [ ] 📊 Weight trend charts & weekly reports
-- [ ] 📷 AI-powered food scanning (camera → nutrition)
-- [ ] 📴 Offline mode with local caching
-- [ ] 🏆 Social challenges & friend leaderboards
-- [ ] 🔄 Barcode scanner for packaged foods
+- [ ] 1. Weight trend charts & weekly reports
+- [ ] 2. AI-powered food scanning (camera → nutrition)
+- [ ] 3. Offline mode with local caching
+- [ ] 4. Social challenges & friend leaderboards
+- [ ] 5. Barcode scanner for packaged foods
 
 ---
 
